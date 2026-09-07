@@ -1,198 +1,130 @@
-# Money Moves v0.3
+# Money Moves v0.5
 
-Money Moves is a mobile-first shared household cash-flow assistant. This beta adds a live bank-data integration layer using Plaid, while keeping money-movement recommendations deterministic and auditable.
+Money Moves is a mobile-first household cash-flow operating system. It connects live bank data through Plaid, applies deterministic household rules, and answers the question: **what should we do with the money we have right now?**
 
-## What v0.3 adds
+## v0.5 features
 
-- Plaid Link bank connection flow
-- Mobile OAuth return handling for institutions that require OAuth
-- Server-side encrypted storage of Plaid access tokens
-- Live account balance refresh
-- Incremental transaction sync with `/transactions/sync`
-- Plaid transaction webhooks for background updates
-- Plaid webhook signature verification using `Plaid-Verification`
-- Household account mapping for checking / bills reserve / long-term savings
-- Automatic Navy Federal mask mapping for the beta accounts ending 1174, 9384, and 3051 when those masks are available
-- Automatic discretionary-spend calculation from synced transactions
-- Household-specific transaction classification rules
-- Shared household alerts after bank syncs and material spending changes
-- Existing shared household invitations, completion state, activity log, PWA install support, and optional Web Push
+- Live Plaid balances and `/transactions/sync`
+- Bill-aware decision engine with checking floor + 1st-of-month holdback + 15th reserve
+- Safe-to-spend number
+- Payday Mode and 1st-of-month deposit detection
+- Daily spend report and discretionary pacing
+- Morning Money Brief
+- Bill runway and funding checkpoint
+- Operating surplus and monthly savings target
+- Weekly Money Moves report
+- Month-end savings scorecard
+- Subscription detection and price-change flags
+- Unusual-spend detection
+- Merchant intelligence with household correction rules
+- 30-day cash-flow forecast
+- Configurable savings routing
+- Household activity log with per-device member names
+- Optional Web Push for morning, weekly, payday, pace, cap, and unusual-spend alerts
+- Optional private-beta household access key
 
-## Safety model
+## Household plan currently encoded
 
-This beta is **read-only with respect to bank money movement**. It can read balances and transactions through Plaid and recommend exact transfers, but it does not initiate ACH transfers or move money.
+- Spendable income: `$11,659/mo`
+- Planned expenses: `$7,991/mo`
+- Operating surplus: `$3,668/mo`
+- Savings buffer: `$1,089/mo`
+- Total savings/investing target: `$4,757/mo`
+- Guaranteed VA + Coast Guard income: `$7,053` on the 1st
+- 1st bills bucket: `$4,862.76`
+- 15th bills reserve: `$2,552.10`
+- Checking floor: `$1,000`
+- Discretionary cap: `$850/mo`
+- Normal civilian paycheck: `$2,303` biweekly
 
-The recommendation engine is deterministic. AI can be layered on later for explanations and ambiguous transaction review, but exact transfer amounts should continue to come from auditable rules.
+The app does **not** initiate bank transfers. Recommendations remain advisory and auditable.
 
 ## Stack
 
-- Node.js + Express
-- SQLite via `better-sqlite3`
-- Plaid Node SDK
-- Web Push / VAPID
-- Vanilla mobile-first PWA
-- Railway-ready Docker deployment
+- Node.js 22 built-in HTTP server
+- Node `node:sqlite`
+- Plaid API via direct `fetch`
+- SQLite on a persistent Railway volume
+- Vanilla PWA
+- Optional `web-push` / VAPID
 
-## Local development
+## Railway variables
 
-```bash
-cp .env.example .env
-npm install
-npm test
-npm start
-```
+Use a persistent Railway volume mounted at `/data` and set:
 
-Then open `http://localhost:8080`.
-
-Without Plaid credentials the rest of the app still works, but the bank-link endpoints will report that Plaid is not configured.
-
-## Plaid setup
-
-Create a Plaid application and enable the products you need for the beta. At minimum this build expects `transactions`; it also requests `auth` because it is useful for future money-movement features.
-
-Set:
-
-```bash
-PLAID_CLIENT_ID=...
-PLAID_SECRET=...
-PLAID_ENV=sandbox
-PLAID_REDIRECT_URI=https://YOUR-DOMAIN/oauth.html
-PLAID_WEBHOOK_URL=https://YOUR-DOMAIN/api/plaid/webhook
-```
-
-For initial development use `sandbox`. Move to `production` only after Plaid approves the application and the required institutions/products.
-
-### OAuth redirect
-
-For mobile web OAuth, register the exact HTTPS redirect URI with Plaid and set it as `PLAID_REDIRECT_URI`. The included `oauth.html` stores the received OAuth return URI and routes the user back to the app so Plaid Link can resume the original Link session.
-
-## Encryption key
-
-Plaid access tokens are encrypted before they are stored in SQLite. Generate a 32-byte key:
-
-```bash
-openssl rand -base64 32
-```
-
-Set the result as:
-
-```bash
-BANK_TOKEN_ENCRYPTION_KEY=...
-```
-
-Do not rotate this key without a migration plan for already-linked Items.
-
-## Web Push
-
-Generate VAPID keys:
-
-```bash
-npx web-push generate-vapid-keys
-```
-
-Set:
-
-```bash
-VAPID_PUBLIC_KEY=...
-VAPID_PRIVATE_KEY=...
-VAPID_SUBJECT=mailto:you@example.com
-```
-
-On iPhone, Web Push requires a supported iOS version and the PWA should be added to the Home Screen.
-
-## Railway deployment
-
-The included `Dockerfile` and `railway.json` are ready for Railway.
-
-Recommended Railway variables:
-
-```bash
+```text
+DB_PATH=/data/money-moves.db
 NODE_ENV=production
 PORT=8080
-DATA_DIR=/data
-APP_BASE_URL=https://YOUR-DOMAIN
+
+PLAID_ENV=production
 PLAID_CLIENT_ID=...
 PLAID_SECRET=...
-PLAID_ENV=production
 PLAID_REDIRECT_URI=https://YOUR-DOMAIN/oauth.html
 PLAID_WEBHOOK_URL=https://YOUR-DOMAIN/api/plaid/webhook
 BANK_TOKEN_ENCRYPTION_KEY=...
+
 VAPID_PUBLIC_KEY=...
 VAPID_PRIVATE_KEY=...
 VAPID_SUBJECT=mailto:you@example.com
+
+MONEY_MOVES_ACCESS_KEY=use-a-long-household-password
+SESSION_SECRET=use-a-separate-long-random-secret
 ```
 
-Attach a persistent Railway volume at `/data` so the SQLite database survives deployments.
+`MONEY_MOVES_ACCESS_KEY` is optional in code so development does not lock itself out, but it is strongly recommended whenever the deployment contains real financial data. `SESSION_SECRET` signs the 30-day household session cookie.
 
-## Bank sync behavior
+Do not rotate `BANK_TOKEN_ENCRYPTION_KEY` casually after Plaid Items have been linked because it encrypts stored Plaid access tokens.
 
-When a bank is linked:
+## Plaid
 
-1. Money Moves creates a Plaid Link token.
-2. The browser opens Plaid Link.
-3. The public token is exchanged server-side.
-4. The permanent access token is encrypted at rest.
-5. Account balances are fetched.
-6. Transactions are incrementally synchronized.
-7. Account roles are automatically mapped where possible.
-8. The deterministic household engine recomputes the current Money Moves plan.
-9. Household members see the same state and can receive a push notification.
+The app creates a Link token with the Transactions product, uses the configured OAuth redirect URI, encrypts the returned Plaid access token, refreshes balances, and incrementally syncs transactions. Plaid `TRANSACTIONS / SYNC_UPDATES_AVAILABLE` webhooks trigger another sync and recomputation.
 
-Plaid webhooks call `/api/plaid/webhook`. For transaction updates, the server runs another incremental sync and refreshes the household plan.
+## Merchant rules
 
-## Household beta rules
+The built-in beta classifier currently treats:
 
-The seed household uses:
+- Walmart as groceries
+- Amazon as discretionary
+- JBA Andrews Main Store as discretionary
+- 7-Eleven / 7-11 `<= $30` as discretionary
+- 7-Eleven / 7-11 `> $30` as gas
+- dining, entertainment, barber/salon/nails/spa as discretionary
+- pending transactions, transfers, loan payments, and credit-card payments as excluded from spending totals
 
-- Checking floor: `$1,000`
-- 15th reserve target: `$2,552.10`
-- Monthly discretionary cap: `$850`
-- Budget-eligible VA: `$4,158`
-- Normal civilian paycheck: `$2,303`
+The dashboard lets the household correct a merchant to `discretionary`, `groceries`, `gas`, `essential`, or `ignore`. Corrections are persisted and reports recalculate immediately.
 
-The beta classifier currently applies these household rules:
+## Decision safety
 
-- Walmart → groceries, excluded from discretionary
-- Amazon → discretionary
-- JBA Andrews Main Store → discretionary
-- 7-Eleven / 7-11 at or under `$30` → discretionary convenience purchase
-- 7-Eleven / 7-11 over `$30` → vehicle gas, excluded from discretionary
-- Dining / restaurants / fast food → discretionary
-- Entertainment / movie theaters → discretionary
-- Haircuts / barber / salon / nails → discretionary
-- Internal transfers and credit-card payments → excluded
-- Pending transactions → excluded until posted
+The engine protects cash in this order:
 
-The transaction page allows the owner to override an individual transaction if Plaid or the beta classifier gets it wrong.
+1. Unconfirmed 1st-of-month bills holdback
+2. `$1,000` checking floor
+3. 15th reserve target
+4. True excess cash available for savings routing
 
-## Important production work before public launch
+The 1st-of-month bills holdback remains protected until a household member marks those bills paid for the month. This prevents the app from sweeping money that may still be needed for the first bill bucket.
 
-This is appropriate for a private household beta, not yet a public financial product. Before opening it to outside customers, add at minimum:
+## Push alerts
 
-- Real user authentication instead of local household tokens
-- Stronger household authorization and device/session management
-- CSRF protection and request-rate controls
-- Central secrets management / key rotation
-- Structured audit logging
-- Database migrations and managed Postgres
-- Privacy policy / terms / data deletion workflows
-- Plaid production review and institution coverage testing
-- Monitoring, alerting, backups, and incident response
-- Legal/compliance review of the exact product behavior and marketing claims
-- A formal policy for transaction classification and recommendation errors
+With VAPID configured, a device can tap **Enable alerts** to subscribe. The server can send:
+
+- Morning Money Brief around 8 AM Eastern
+- Saturday weekly summary around 8 AM Eastern
+- Payday detection
+- Discretionary pace alerts
+- Discretionary-cap alerts
+- Unusual-spend alerts
 
 ## Tests
 
 ```bash
+npm install
 npm test
 ```
 
-The tests cover the deterministic payday allocation engine and the household transaction-classification rules.
+Tests cover the decision engine, insights/classification logic, and legacy bank classification rules.
 
-## Core principle
+## Before a public launch
 
-A bank balance is not the same thing as spendable money.
-
-Money Moves should answer the more useful household question:
-
-> What should we do with the money we have right now?
+This remains a private household beta. A public multi-tenant version still needs real user/household authentication, CSRF protection, rate limiting, managed database migrations, backups, monitoring, privacy/deletion workflows, legal/compliance review, and production-grade tenant isolation.
