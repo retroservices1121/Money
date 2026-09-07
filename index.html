@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#f5f5f7">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Money Moves">
-<link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/styles.css"><script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<link rel="manifest" href="/manifest.webmanifest?v=8"><link rel="stylesheet" href="/styles.css?v=8"><script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <title>Money Moves</title>
 </head>
 <body>
@@ -25,7 +25,7 @@
   <div class="search-shell"><span>⌕</span><input id="transactionSearch" type="search" placeholder="Search transactions" autocomplete="off"></div>
   <section class="section-block"><div class="section-head"><h3>Last 7 days</h3><span class="section-kicker">Posted spending</span></div><div id="spendingChart" class="chart-card"></div></section>
   <section class="section-block"><div class="section-head"><h3>This month</h3><span class="section-kicker">Posted</span></div><div id="spendSummaryMirror" class="stats-grid"></div></section>
-  <section class="section-block"><div class="section-head"><h3>Transactions</h3><span id="transactionCount" class="section-kicker">Recent</span></div><div id="transactionHistory" class="list-card history-card"></div></section>
+  <section class="section-block"><div class="section-head"><h3>Transactions</h3><span id="transactionCount" class="section-kicker">Recent</span></div><div id="transactionHistory" class="list-card history-card"></div><div id="topTx" class="hidden" aria-hidden="true"></div></section>
   <section class="section-block"><div class="section-head"><h3>Subscriptions</h3><span class="section-kicker">Recurring</span></div><div id="subscriptions" class="list-card"></div></section>
   <section class="section-block"><div class="section-head"><h3>Needs a look</h3><span class="section-kicker">Unusual spend</span></div><div id="alertsList" class="list-card"></div></section>
 </section>
@@ -63,5 +63,5 @@
 </div>
 <div id="sheetBackdrop" class="sheet-backdrop hidden"></div>
 <aside id="detailSheet" class="detail-sheet" aria-hidden="true"><div class="sheet-handle"></div><button id="sheetClose" class="sheet-close" aria-label="Close">×</button><div id="sheetContent"></div></aside>
-<script src="/app.js"></script>
+<script src="/app.js?v=8"></script>
 </body></html>
