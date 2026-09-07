@@ -1,1 +1,30 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0f172a"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/styles.css"><script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script><title>Money Moves</title></head><body><main class="shell"><header><div><small>HOUSEHOLD MONEY OS</small><h1>Money Moves</h1></div><span class="pill">LIVE BETA</span></header><section class="hero"><small>NEXT MONEY MOVE</small><h2>Know exactly what to do with every paycheck.</h2><p>Live balances, bills reserve, savings sweep and discretionary guardrails in one shared household plan.</p><button id="connect">Connect bank</button><button id="sync" class="secondary">Refresh bank data</button><p id="status" aria-live="polite"></p></section><section><h3>Recommended moves</h3><div id="moves" class="grid"></div></section><section><h3>Monthly plan</h3><div id="budget" class="card"></div></section><section><h3>Daily spend report</h3><div id="spend" class="card"></div></section><section><h3>Household snapshot</h3><div id="accounts" class="card"></div></section><section><h3>Bank connections</h3><div id="banks" class="card"></div></section><section><h3>Guardrails</h3><div id="rules" class="card"></div></section></main><script src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#07111f">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/styles.css"><script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<title>Money Moves</title>
+</head>
+<body>
+<div id="authGate" class="auth-gate hidden"><form id="loginForm" class="auth-card"><small>PRIVATE BETA</small><h1>Money Moves</h1><p>Enter the household access key.</p><input id="accessKey" type="password" autocomplete="current-password" placeholder="Household access key" required><button>Unlock</button><p id="loginError" class="error"></p></form></div>
+<main class="shell" id="appShell">
+<header><div><small>HOUSEHOLD CASH-FLOW OS</small><h1>Money Moves</h1></div><div class="header-actions"><span class="pill">LIVE BETA</span><button id="member" class="tiny secondary">Set name</button><button id="alerts" class="tiny secondary">Enable alerts</button></div></header>
+<section class="hero"><div><small>RIGHT NOW</small><h2 id="heroMove">Loading your money move…</h2><p id="brief">Syncing household cash flow.</p></div><div class="hero-actions"><button id="sync">Refresh bank data</button><button id="connect" class="secondary">Connect bank</button></div><p id="status" aria-live="polite"></p><div id="securityBanner" class="security hidden"></div></section>
+<section><div class="section-title"><h3>Do now</h3><span id="modeBadge" class="subpill">LIVE</span></div><div id="moves" class="grid"></div></section>
+<section><h3>Safe to spend</h3><div id="safe" class="feature-card"></div></section>
+<section><h3>Daily spend report</h3><div id="daily" class="stats-grid"></div><div id="topTx" class="card compact"></div></section>
+<section><h3>Bill runway</h3><div id="runway" class="feature-card"></div></section>
+<section><h3>Monthly plan</h3><div id="monthly" class="stats-grid"></div></section>
+<section><h3>Month-end scorecard</h3><div id="scorecard" class="feature-card"></div></section>
+<section><h3>Weekly Money Moves</h3><div id="weekly" class="feature-card"></div></section>
+<section><h3>Subscriptions & recurring</h3><div id="subscriptions" class="card compact"></div></section>
+<section><h3>Unusual spend</h3><div id="alertsList" class="card compact"></div></section>
+<section><h3>30-day cash-flow forecast</h3><div id="forecast" class="timeline"></div></section>
+<section><h3>Savings routing</h3><div id="routing" class="feature-card"></div><form id="routeForm" class="route-form"></form></section>
+<section><h3>Household snapshot</h3><div id="accounts" class="card"></div></section>
+<section><h3>Bank connections</h3><div id="banks" class="card"></div></section>
+<section><h3>Household activity</h3><div id="activity" class="card compact"></div></section>
+<section><h3>Guardrails</h3><div id="rules" class="card"></div></section>
+</main>
+<script src="/app.js"></script>
+</body></html>
