@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#f5f5f7">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Money Moves">
-<link rel="manifest" href="/manifest.webmanifest?v=8"><link rel="stylesheet" href="/styles.css?v=8"><script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<link rel="manifest" href="/manifest.webmanifest?v=9"><link rel="stylesheet" href="/styles.css?v=9"><link rel="stylesheet" href="/ui-polish.css?v=9"><script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <title>Money Moves</title>
 </head>
 <body>
@@ -19,7 +19,6 @@
   <section class="section-block"><div class="section-head"><h3>Today</h3><button class="text-button" data-jump="spend">See all</button></div><div id="daily" class="stats-grid"></div></section>
   <section class="section-block"><div class="section-head"><h3>Upcoming</h3><button class="text-button" data-jump="plan">View plan</button></div><div id="runway" class="feature-card"></div></section>
 </section>
-
 <section class="tab-screen" data-screen="spend">
   <div class="screen-title"><div><small>SPENDING</small><h2>Activity</h2></div></div>
   <div class="search-shell"><span>⌕</span><input id="transactionSearch" type="search" placeholder="Search transactions" autocomplete="off"></div>
@@ -29,7 +28,6 @@
   <section class="section-block"><div class="section-head"><h3>Subscriptions</h3><span class="section-kicker">Recurring</span></div><div id="subscriptions" class="list-card"></div></section>
   <section class="section-block"><div class="section-head"><h3>Needs a look</h3><span class="section-kicker">Unusual spend</span></div><div id="alertsList" class="list-card"></div></section>
 </section>
-
 <section class="tab-screen" data-screen="plan">
   <div class="screen-title"><div><small>PLAN</small><h2>Money roadmap</h2></div></div>
   <section class="section-block"><h3>Monthly plan</h3><div id="monthly" class="stats-grid"></div></section>
@@ -38,14 +36,12 @@
   <section class="section-block"><h3>30-day forecast</h3><div id="forecast" class="timeline"></div></section>
   <section class="section-block"><h3>Savings routing</h3><div id="routing" class="feature-card"></div></section>
 </section>
-
 <section class="tab-screen" data-screen="accounts">
   <div class="screen-title"><div><small>ACCOUNTS</small><h2>Wallet</h2></div><button id="connect" class="primary-small">+ Add</button></div>
   <section class="section-block"><div class="section-head"><h3>My accounts</h3><span class="section-kicker">Tap a card</span></div><div id="accounts" class="wallet-stack"></div></section>
   <section class="section-block"><h3>Connections</h3><div id="banks" class="card"></div></section>
   <section class="section-block"><h3>Guardrails</h3><div id="rules" class="card"></div></section>
 </section>
-
 <section class="tab-screen" data-screen="settings">
   <div class="screen-title"><div><small>SETTINGS</small><h2>Money Moves</h2></div></div>
   <section class="settings-card"><button id="alerts" class="settings-row"><span class="settings-icon">◉</span><span><b>Notifications</b><small>Daily brief, payday and spending alerts</small></span><span>›</span></button><button id="connectSettings" class="settings-row"><span class="settings-icon">＋</span><span><b>Add bank</b><small>Securely connect through Plaid</small></span><span>›</span></button><button id="syncSettings" class="settings-row"><span class="settings-icon">↻</span><span><b>Refresh data</b><small>Pull latest balances and transactions</small></span><span>›</span></button></section>
@@ -63,5 +59,5 @@
 </div>
 <div id="sheetBackdrop" class="sheet-backdrop hidden"></div>
 <aside id="detailSheet" class="detail-sheet" aria-hidden="true"><div class="sheet-handle"></div><button id="sheetClose" class="sheet-close" aria-label="Close">×</button><div id="sheetContent"></div></aside>
-<script src="/app.js?v=8"></script>
+<script src="/app.js?v=9"></script>
 </body></html>
