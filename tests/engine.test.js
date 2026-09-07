@@ -1,0 +1,5 @@
+const assert=require('node:assert/strict');
+const {calculatePaydayPlan}=require('../src/engine');
+const p=calculatePaydayPlan({checking:2500.01,reserve:447.95,savings:77273.21,checkingFloor:1000,reserveTarget:2552.10,civilianPaycheck:2303});
+assert.equal(p.reserveGap,2104.15);assert.equal(p.checkingExcess,1500.01);assert.equal(p.toReserve,2104.15);assert.equal(p.toSavings,1698.86);assert.equal(p.checkingFloor,1000);
+console.log('engine tests passed');

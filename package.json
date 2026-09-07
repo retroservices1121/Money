@@ -1,0 +1,14 @@
+{
+  "name": "money-moves",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Shared household Money Moves beta with live Plaid bank sync",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node tests/engine.test.js && node tests/bank.test.js"
+  },
+  "engines": {"node": ">=22.5.0"},
+  "optionalDependencies": {"web-push": "^3.6.7"}
+}
