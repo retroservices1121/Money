@@ -75,7 +75,6 @@ function reconcileBills(){
 function firstBillsManuallyComplete(){try{const db=openDb(true);if(!db)return false;const month=localDate().slice(0,7),hit=db.prepare('SELECT completed_at FROM checkpoints WHERE month=? AND checkpoint=?').get(month,'first_bills');db.close();return!!hit}catch{return false}}
 function plannerFunding(){const r=reconcileBills(),hasFirst=r.bills.some(x=>x.bucket==='first'),hasFifteenth=r.bills.some(x=>x.bucket==='fifteenth');return{...r,firstHoldback:firstBillsManuallyComplete()?0:(hasFirst?r.summary.first.remaining:null),reserveTarget:hasFifteenth?r.summary.fifteenth.planned:null}}
 
-// Patch the pure decision engine input before server.js captures the export.
 const engine=require('./src/engine');
 const baseDecision=engine.calculateDecisionPlan;
 engine.calculateDecisionPlan=function(input){try{const f=plannerFunding();return baseDecision({...input,operatingHoldback:f.firstHoldback===null?input.operatingHoldback:f.firstHoldback,reserveTarget:f.reserveTarget===null?input.reserveTarget:f.reserveTarget})}catch(err){console.warn('[Money Moves] Planned bill funding fallback:',err.message);return baseDecision(input)}};
@@ -93,6 +92,9 @@ http.createServer=function(listener){
   return originalCreateServer.call(http,async(req,res)=>{
     try{
       const u=new URL(req.url,'http://localhost');
+      if(req.method==='GET'&&u.pathname==='/app.js'){
+        const app=fs.readFileSync(path.join(__dirname,'app.js'),'utf8'),bills=fs.readFileSync(path.join(__dirname,'bills-ui.js'),'utf8');res.writeHead(200,{'Content-Type':'text/javascript','Cache-Control':'no-cache'});return res.end(`${app}\n;${bills}`);
+      }
       if(req.method==='GET'&&u.pathname==='/bills-ui.js'){
         const p=path.join(__dirname,'bills-ui.js');res.writeHead(200,{'Content-Type':'text/javascript','Cache-Control':'no-cache'});return fs.createReadStream(p).pipe(res);
       }
