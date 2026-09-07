@@ -53,7 +53,7 @@ function reconcileBills(){
     const today=localDate(),month=today.slice(0,7),todayDay=Number(today.slice(-2));
     const bills=db.prepare('SELECT id,name,merchant_match,amount,due_day,bucket,active FROM planned_bills WHERE household_id=? AND active=1 ORDER BY due_day,id').all(H);
     const overrides=new Map(db.prepare('SELECT bill_id,paid,actor,updated_at FROM bill_overrides WHERE month=?').all(month).map(x=>[Number(x.bill_id),x]));
-    const txs=db.prepare(`SELECT transaction_id,name,merchant_name,amount,date,pending FROM bank_transactions bt JOIN bank_accounts ba ON ba.account_id=bt.account_id WHERE ba.household_id=? AND bt.date LIKE ? AND bt.pending=0 AND bt.amount>0 ORDER BY bt.date`).all(H,`${month}-%`);
+    const txs=db.prepare(`SELECT bt.transaction_id,bt.name AS transaction_name,bt.merchant_name,bt.amount,bt.date,bt.pending FROM bank_transactions bt JOIN bank_accounts ba ON ba.account_id=bt.account_id WHERE ba.household_id=? AND bt.date LIKE ? AND bt.pending=0 AND bt.amount>0 ORDER BY bt.date`).all(H,`${month}-%`).map(t=>({...t,name:t.transaction_name}));
     const used=new Set(),out=[];
     for(const b of bills){
       const ov=overrides.get(Number(b.id));let match=null;
