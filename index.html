@@ -9,7 +9,7 @@
 <body>
 <div id="authGate" class="auth-gate hidden"><form id="loginForm" class="auth-card"><div class="app-icon">M</div><h1>Money Moves</h1><p>Unlock your household wallet.</p><input id="accessKey" type="password" autocomplete="current-password" placeholder="Household access key" required><button>Continue</button><p id="loginError" class="error"></p></form></div>
 <div class="app-frame" id="appShell">
-<header class="app-bar"><div class="app-title"><span>Money Moves</span><small>HOUSEHOLD WALLET</small></div><button id="member" class="avatar-button">JP</button></header>
+<header class="app-bar"><div class="app-title"><span>Money Moves</span><small>HOUSEHOLD WALLET</small></div><div class="app-actions"><button id="notificationsButton" class="circle-action" aria-label="Notifications"><span>●</span></button><button id="member" class="avatar-button">JP</button></div></header>
 <main class="screen-stack">
 <section class="tab-screen active" data-screen="home">
   <div class="welcome"><small>GOOD MORNING</small><h2>Your money, ready for today.</h2></div>
@@ -22,8 +22,10 @@
 
 <section class="tab-screen" data-screen="spend">
   <div class="screen-title"><div><small>SPENDING</small><h2>Activity</h2></div></div>
+  <div class="search-shell"><span>⌕</span><input id="transactionSearch" type="search" placeholder="Search transactions" autocomplete="off"></div>
+  <section class="section-block"><div class="section-head"><h3>Last 7 days</h3><span class="section-kicker">Posted spending</span></div><div id="spendingChart" class="chart-card"></div></section>
   <section class="section-block"><div class="section-head"><h3>This month</h3><span class="section-kicker">Posted</span></div><div id="spendSummaryMirror" class="stats-grid"></div></section>
-  <section class="section-block"><div class="section-head"><h3>Transactions</h3><span class="section-kicker">Tap category to correct</span></div><div id="topTx" class="list-card"></div></section>
+  <section class="section-block"><div class="section-head"><h3>Transactions</h3><span id="transactionCount" class="section-kicker">Recent</span></div><div id="transactionHistory" class="list-card history-card"></div></section>
   <section class="section-block"><div class="section-head"><h3>Subscriptions</h3><span class="section-kicker">Recurring</span></div><div id="subscriptions" class="list-card"></div></section>
   <section class="section-block"><div class="section-head"><h3>Needs a look</h3><span class="section-kicker">Unusual spend</span></div><div id="alertsList" class="list-card"></div></section>
 </section>
@@ -39,7 +41,7 @@
 
 <section class="tab-screen" data-screen="accounts">
   <div class="screen-title"><div><small>ACCOUNTS</small><h2>Wallet</h2></div><button id="connect" class="primary-small">+ Add</button></div>
-  <section class="section-block"><div class="section-head"><h3>My accounts</h3><span class="section-kicker">Swipe-worthy cards</span></div><div id="accounts" class="wallet-stack"></div></section>
+  <section class="section-block"><div class="section-head"><h3>My accounts</h3><span class="section-kicker">Tap a card</span></div><div id="accounts" class="wallet-stack"></div></section>
   <section class="section-block"><h3>Connections</h3><div id="banks" class="card"></div></section>
   <section class="section-block"><h3>Guardrails</h3><div id="rules" class="card"></div></section>
 </section>
@@ -59,5 +61,7 @@
 <button class="nav-item" data-tab="settings"><span class="nav-glyph">•••</span><b>More</b></button>
 </nav>
 </div>
+<div id="sheetBackdrop" class="sheet-backdrop hidden"></div>
+<aside id="detailSheet" class="detail-sheet" aria-hidden="true"><div class="sheet-handle"></div><button id="sheetClose" class="sheet-close" aria-label="Close">×</button><div id="sheetContent"></div></aside>
 <script src="/app.js"></script>
 </body></html>
