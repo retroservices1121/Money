@@ -1,30 +1,61 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#07111f">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#08111f">
 <link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/styles.css"><script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <title>Money Moves</title>
 </head>
 <body>
-<div id="authGate" class="auth-gate hidden"><form id="loginForm" class="auth-card"><small>PRIVATE BETA</small><h1>Money Moves</h1><p>Enter the household access key.</p><input id="accessKey" type="password" autocomplete="current-password" placeholder="Household access key" required><button>Unlock</button><p id="loginError" class="error"></p></form></div>
-<main class="shell" id="appShell">
-<header><div><small>HOUSEHOLD CASH-FLOW OS</small><h1>Money Moves</h1></div><div class="header-actions"><span class="pill">LIVE BETA</span><button id="member" class="tiny secondary">Set name</button><button id="alerts" class="tiny secondary">Enable alerts</button></div></header>
-<section class="hero"><div><small>RIGHT NOW</small><h2 id="heroMove">Loading your money move…</h2><p id="brief">Syncing household cash flow.</p></div><div class="hero-actions"><button id="sync">Refresh bank data</button><button id="connect" class="secondary">Connect bank</button></div><p id="status" aria-live="polite"></p><div id="securityBanner" class="security hidden"></div></section>
-<section><div class="section-title"><h3>Do now</h3><span id="modeBadge" class="subpill">LIVE</span></div><div id="moves" class="grid"></div></section>
-<section><h3>Safe to spend</h3><div id="safe" class="feature-card"></div></section>
-<section><h3>Daily spend report</h3><div id="daily" class="stats-grid"></div><div id="topTx" class="card compact"></div></section>
-<section><h3>Bill runway</h3><div id="runway" class="feature-card"></div></section>
-<section><h3>Monthly plan</h3><div id="monthly" class="stats-grid"></div></section>
-<section><h3>Month-end scorecard</h3><div id="scorecard" class="feature-card"></div></section>
-<section><h3>Weekly Money Moves</h3><div id="weekly" class="feature-card"></div></section>
-<section><h3>Subscriptions & recurring</h3><div id="subscriptions" class="card compact"></div></section>
-<section><h3>Unusual spend</h3><div id="alertsList" class="card compact"></div></section>
-<section><h3>30-day cash-flow forecast</h3><div id="forecast" class="timeline"></div></section>
-<section><h3>Savings routing</h3><div id="routing" class="feature-card"></div><form id="routeForm" class="route-form"></form></section>
-<section><h3>Household snapshot</h3><div id="accounts" class="card"></div></section>
-<section><h3>Bank connections</h3><div id="banks" class="card"></div></section>
-<section><h3>Household activity</h3><div id="activity" class="card compact"></div></section>
-<section><h3>Guardrails</h3><div id="rules" class="card"></div></section>
+<div id="authGate" class="auth-gate hidden"><form id="loginForm" class="auth-card"><div class="brand-mark">M</div><small>PRIVATE BETA</small><h1>Money Moves</h1><p>Unlock your household money OS.</p><input id="accessKey" type="password" autocomplete="current-password" placeholder="Household access key" required><button>Unlock Money Moves</button><p id="loginError" class="error"></p></form></div>
+<div class="app-frame" id="appShell">
+<header class="app-bar"><div class="brand"><div class="brand-mark">M</div><div><small>HOUSEHOLD MONEY OS</small><h1>Money Moves</h1></div></div><button id="member" class="avatar-button">JP</button></header>
+<main class="screen-stack">
+<section class="tab-screen active" data-screen="home">
+  <section class="hero"><div class="hero-top"><span id="modeBadge" class="mode-pill">LIVE</span><button id="sync" class="icon-button" aria-label="Refresh bank data">↻</button></div><small>RIGHT NOW</small><h2 id="heroMove">Loading your money move…</h2><p id="brief">Syncing household cash flow.</p><div id="status" aria-live="polite"></div><div id="securityBanner" class="security hidden"></div></section>
+  <section class="section-block"><div class="section-head"><h3>Do now</h3><span class="section-kicker">Today</span></div><div id="moves" class="move-grid"></div></section>
+  <section class="section-block"><div class="section-head"><h3>Safe to spend</h3><span class="section-kicker">Guardrail</span></div><div id="safe" class="feature-card"></div></section>
+  <section class="section-block"><div class="section-head"><h3>Today</h3><button class="text-button" data-jump="spend">See spending</button></div><div id="daily" class="stats-grid"></div></section>
+  <section class="section-block"><div class="section-head"><h3>Bill runway</h3><button class="text-button" data-jump="plan">View plan</button></div><div id="runway" class="feature-card"></div></section>
+</section>
+
+<section class="tab-screen" data-screen="spend">
+  <div class="screen-title"><div><small>SPENDING</small><h2>Where your money went</h2></div></div>
+  <section class="section-block"><div class="section-head"><h3>Daily report</h3><span class="section-kicker">Posted</span></div><div id="spendSummaryMirror" class="stats-grid"></div></section>
+  <section class="section-block"><div class="section-head"><h3>Largest transactions</h3><span class="section-kicker">Tap to recategorize</span></div><div id="topTx" class="list-card"></div></section>
+  <section class="section-block"><div class="section-head"><h3>Subscriptions</h3><span class="section-kicker">Detected</span></div><div id="subscriptions" class="list-card"></div></section>
+  <section class="section-block"><div class="section-head"><h3>Unusual spend</h3><span class="section-kicker">Review</span></div><div id="alertsList" class="list-card"></div></section>
+</section>
+
+<section class="tab-screen" data-screen="plan">
+  <div class="screen-title"><div><small>PLAN</small><h2>Your household roadmap</h2></div></div>
+  <section class="section-block"><h3>Monthly plan</h3><div id="monthly" class="stats-grid"></div></section>
+  <section class="section-block"><h3>Month-end scorecard</h3><div id="scorecard" class="feature-card"></div></section>
+  <section class="section-block"><h3>Weekly Money Moves</h3><div id="weekly" class="feature-card"></div></section>
+  <section class="section-block"><h3>30-day forecast</h3><div id="forecast" class="timeline"></div></section>
+  <section class="section-block"><h3>Savings routing</h3><div id="routing" class="feature-card"></div></section>
+</section>
+
+<section class="tab-screen" data-screen="accounts">
+  <div class="screen-title"><div><small>ACCOUNTS</small><h2>Your money at a glance</h2></div><button id="connect" class="primary-small">+ Bank</button></div>
+  <section class="section-block"><h3>Household balances</h3><div id="accounts" class="card"></div></section>
+  <section class="section-block"><h3>Bank connections</h3><div id="banks" class="card"></div></section>
+  <section class="section-block"><h3>Guardrails</h3><div id="rules" class="card"></div></section>
+</section>
+
+<section class="tab-screen" data-screen="settings">
+  <div class="screen-title"><div><small>SETTINGS</small><h2>Make Money Moves yours</h2></div></div>
+  <section class="settings-card"><button id="alerts" class="settings-row"><span class="settings-icon">🔔</span><span><b>Push alerts</b><small>Daily brief, payday and spending alerts</small></span><span>›</span></button><button id="connectSettings" class="settings-row"><span class="settings-icon">🏦</span><span><b>Connect another bank</b><small>Securely connect through Plaid</small></span><span>›</span></button><button id="syncSettings" class="settings-row"><span class="settings-icon">↻</span><span><b>Refresh bank data</b><small>Pull latest posted balances and transactions</small></span><span>›</span></button></section>
+  <section class="section-block"><h3>Savings routing setup</h3><form id="routeForm" class="route-form"></form></section>
+  <section class="section-block"><h3>Household activity</h3><div id="activity" class="list-card"></div></section>
+</section>
 </main>
+<nav class="bottom-nav" aria-label="Primary">
+<button class="nav-item active" data-tab="home"><span>⌂</span><b>Home</b></button>
+<button class="nav-item" data-tab="spend"><span>◔</span><b>Spend</b></button>
+<button class="nav-item" data-tab="plan"><span>▤</span><b>Plan</b></button>
+<button class="nav-item" data-tab="accounts"><span>▣</span><b>Accounts</b></button>
+<button class="nav-item" data-tab="settings"><span>⚙</span><b>Settings</b></button>
+</nav>
+</div>
 <script src="/app.js"></script>
 </body></html>
