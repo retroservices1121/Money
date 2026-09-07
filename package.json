@@ -1,8 +1,8 @@
 {
-  "name":"money-moves","version":"0.5.0","private":true,
+  "name":"money-moves","version":"0.5.1","private":true,
   "description":"Household cash-flow operating system with live Plaid bank sync, deterministic money moves, reports and push alerts",
   "main":"server.js",
-  "scripts":{"start":"node server.js","dev":"node --watch server.js","test":"node tests/engine.test.js && node tests/insights.test.js && node tests/bank.test.js"},
+  "scripts":{"start":"node bootstrap.js","dev":"node --watch bootstrap.js","test":"node tests/engine.test.js && node tests/insights.test.js && node tests/bank.test.js"},
   "engines":{"node":">=22.5.0"},
   "optionalDependencies":{"web-push":"^3.6.7"}
 }
