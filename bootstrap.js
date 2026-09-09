@@ -28,6 +28,7 @@ const H='household_beta';
 const ACCESS_KEY=process.env.MONEY_MOVES_ACCESS_KEY||'';
 const SESSION_SECRET=process.env.SESSION_SECRET||process.env.BANK_TOKEN_ENCRYPTION_KEY||'money-moves-dev-session';
 const DB_PATH=process.env.DB_PATH||path.join(__dirname,'data','money-moves.db');
+fs.mkdirSync(path.dirname(DB_PATH),{recursive:true});
 function cookies(req){return Object.fromEntries(String(req.headers.cookie||'').split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('=');return [x.slice(0,i),decodeURIComponent(x.slice(i+1))]}));}
 function sign(v){return crypto.createHmac('sha256',SESSION_SECRET).update(v).digest('base64url')}
 function validSession(req){if(!ACCESS_KEY)return true;const token=cookies(req).mm_session;if(!token)return false;const [exp,sig]=token.split('.');if(!exp||!sig||Number(exp)<Date.now())return false;const expected=sign(exp);try{return crypto.timingSafeEqual(Buffer.from(sig),Buffer.from(expected))}catch{return false}}
@@ -38,6 +39,28 @@ function localDate(){const p=Object.fromEntries(new Intl.DateTimeFormat('en-US',
 function openDb(readOnly=false){if(!fs.existsSync(DB_PATH)&&readOnly)return null;const db=new DatabaseSync(DB_PATH,{readOnly});if(!readOnly)db.exec(`CREATE TABLE IF NOT EXISTS planned_bills(id INTEGER PRIMARY KEY AUTOINCREMENT,household_id TEXT NOT NULL,name TEXT NOT NULL,merchant_match TEXT,amount REAL NOT NULL,due_day INTEGER NOT NULL,bucket TEXT NOT NULL DEFAULT 'first',active INTEGER NOT NULL DEFAULT 1,created_at TEXT,updated_at TEXT);CREATE TABLE IF NOT EXISTS bill_overrides(bill_id INTEGER NOT NULL,month TEXT NOT NULL,paid INTEGER NOT NULL,actor TEXT,updated_at TEXT,PRIMARY KEY(bill_id,month));CREATE INDEX IF NOT EXISTS idx_planned_bills_household ON planned_bills(household_id,active);`);return db}
 function initBillTables(){try{const db=openDb(false);db?.close()}catch(err){console.warn('[Money Moves] Bill planner tables:',err.message)}}
 initBillTables();
+
+// Serialize every bank sync in this process so webhook, manual and automatic syncs
+// cannot race each other and advance the same Plaid cursor concurrently.
+const bank=require('./src/bank');
+const rawSyncHousehold=bank.syncHousehold;
+let syncQueue=Promise.resolve();
+bank.syncHousehold=function(...args){const run=syncQueue.catch(()=>{}).then(()=>rawSyncHousehold(...args));syncQueue=run;return run;};
+let autoSyncPromise=null;
+function oldestSuccessfulSyncMs(db){
+  try{const rows=db.prepare("SELECT last_synced_at FROM bank_items WHERE household_id=? AND status='active'").all(H);if(!rows.length)return null;const stamps=rows.map(x=>Date.parse(x.last_synced_at||'')).filter(Number.isFinite);return stamps.length===rows.length?Math.min(...stamps):0}catch{return null}
+}
+async function ensureFreshBankData({maxAgeMs=2*60*1000}={}){
+  if(autoSyncPromise)return autoSyncPromise;
+  const check=openDb(true);if(!check)return{skipped:true,reason:'database_not_ready'};
+  let active=0,last=0;
+  try{active=Number(check.prepare("SELECT COUNT(*) AS n FROM bank_items WHERE household_id=? AND status='active'").get(H)?.n||0);last=oldestSuccessfulSyncMs(check)||0;}finally{check.close()}
+  if(!active)return{skipped:true,reason:'no_bank'};
+  if(maxAgeMs>0&&last&&Date.now()-last<maxAgeMs)return{skipped:true,reason:'fresh'};
+  autoSyncPromise=(async()=>{const db=openDb(false);try{return await bank.syncHousehold(db,H);}finally{db.close()}})().catch(err=>{console.warn('[Money Moves] Automatic bank sync:',err.message);return{error:err.message}}).finally(()=>{autoSyncPromise=null});
+  return autoSyncPromise;
+}
+
 function readTransactions(url){
   const db=openDb(true);if(!db)return [];
   try{
@@ -98,13 +121,17 @@ http.createServer=function(listener){
       if(req.method==='GET'&&u.pathname==='/bills-ui.js'){
         const p=path.join(__dirname,'bills-ui.js');res.writeHead(200,{'Content-Type':'text/javascript','Cache-Control':'no-cache'});return fs.createReadStream(p).pipe(res);
       }
+      if(req.method==='GET'&&u.pathname==='/api/state'&&validSession(req)){
+        await ensureFreshBankData({maxAgeMs:2*60*1000});
+      }
       if(req.method==='GET'&&u.pathname==='/api/transactions'){
         if(!validSession(req))return sendJson(res,401,{error:'Household access key required'});
+        await ensureFreshBankData({maxAgeMs:2*60*1000});
         return sendJson(res,200,{transactions:readTransactions(u)});
       }
       if(u.pathname==='/api/bills'||u.pathname.startsWith('/api/bills/')){
         if(!validSession(req))return sendJson(res,401,{error:'Household access key required'});
-        if(req.method==='GET'&&u.pathname==='/api/bills')return sendJson(res,200,reconcileBills());
+        if(req.method==='GET'&&u.pathname==='/api/bills'){await ensureFreshBankData({maxAgeMs:2*60*1000});return sendJson(res,200,reconcileBills())}
         if(req.method==='POST'&&u.pathname==='/api/bills'){const b=await readBody(req),r=writeBill('POST',null,b);if(r.error)return sendJson(res,r.status||400,{error:r.error});return sendJson(res,201,reconcileBills())}
         const x=parseBillId(u.pathname);if(x&&req.method==='PATCH'&&!x.manual){const b=await readBody(req),r=writeBill('PATCH',x.id,b);if(r.error)return sendJson(res,r.status||400,{error:r.error});return sendJson(res,200,reconcileBills())}
         if(x&&req.method==='DELETE'&&!x.manual){const r=deleteBill(x.id);if(r.error)return sendJson(res,r.status||400,{error:r.error});return sendJson(res,200,reconcileBills())}
@@ -116,3 +143,7 @@ http.createServer=function(listener){
 };
 
 require('./server');
+// Standard Plaid sync is automatic. Webhooks remain the primary near-real-time path;
+// this timer is a safety net and does not use the optional /transactions/refresh add-on.
+setTimeout(()=>ensureFreshBankData({maxAgeMs:0}).catch(()=>{}),7000).unref();
+setInterval(()=>ensureFreshBankData({maxAgeMs:10*60*1000}).catch(()=>{}),15*60*1000).unref();
