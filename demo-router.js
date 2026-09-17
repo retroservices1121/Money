@@ -1,5 +1,7 @@
 // Demo environment sits in front of production bootstrap. It never opens the live DB.
 const http=require('node:http');
+const fs=require('node:fs');
+const path=require('node:path');
 const demo=require('./demo-data');
 const realCreateServer=http.createServer;
 function cookies(req){return Object.fromEntries(String(req.headers.cookie||'').split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('=');return [x.slice(0,i),decodeURIComponent(x.slice(i+1))]}));}
@@ -9,6 +11,10 @@ function redirect(res,to,cookie){res.writeHead(302,{'Location':to,'Set-Cookie':c
 http.createServer=function(listener){return realCreateServer.call(http,async(req,res)=>{try{const u=new URL(req.url,'http://localhost');
   if(req.method==='GET'&&u.pathname==='/demo')return redirect(res,'/','mm_demo=1; Path=/; SameSite=Lax; Max-Age=86400');
   if(req.method==='GET'&&u.pathname==='/live')return redirect(res,'/','mm_demo=; Path=/; SameSite=Lax; Max-Age=0');
+  if(req.method==='GET'&&u.pathname==='/app.js'){
+    const parts=['app.js','bills-ui.js','demo-ui.js'].map(f=>fs.readFileSync(path.join(__dirname,f),'utf8'));
+    res.writeHead(200,{'Content-Type':'text/javascript','Cache-Control':'no-cache'});return res.end(parts.join('\n;'));
+  }
   if(isDemo(req)){
     if(req.method==='GET'&&u.pathname==='/api/auth-status')return json(res,200,{required:false,authenticated:true,demo:true});
     if(req.method==='GET'&&u.pathname==='/api/state')return json(res,200,demo.state());
